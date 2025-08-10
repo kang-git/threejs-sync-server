@@ -1,6 +1,6 @@
 const cron = require('node-cron');
-const { syncThreeJsRepo } = require('./sync');
-const { createLogger } = require('./logger');
+const { syncThreeJsRepo } = require('./sync/sync');
+const { createLogger } = require('./utils/logs/logger');
 const path = require('path');
 const fs = require('fs-extra');
 

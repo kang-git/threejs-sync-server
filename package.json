@@ -5,10 +5,10 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "sync": "node sync.js",
-    "clear-logs": "node clear-logs.js --all",
-    "clear-sync-log": "node clear-logs.js sync",
-    "clear-index-log": "node clear-logs.js index"
+    "sync": "node sync/sync.js",
+    "clear-logs": "node utils/logs/clear-logs.js --all",
+    "clear-sync-log": "node utils/logs/clear-logs.js sync",
+    "clear-index-log": "node utils/logs/clear-logs.js index"
   },
   "keywords": [
     "threejs",

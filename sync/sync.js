@@ -1,14 +1,14 @@
 const simpleGit = require('simple-git');
 const fs = require('fs-extra');
 const path = require('path');
-const { createLogger } = require('./logger');
+const { createLogger } = require('../utils/logs/logger');
 
 // Three.js 仓库URL
 const THREEJS_REPO = 'https://gitee.com/mirrors/three.js.git'; // 使用Gitee镜像作为主要仓库
 // 备用镜像仓库URL
 const BACKUP_REPO = 'https://github.com/mrdoob/three.js.git'; // GitHub作为备用
 // 本地存储路径
-const LOCAL_PATH = path.join(__dirname, 'three.js-repo');
+const LOCAL_PATH = path.join(__dirname, '../three.js-repo');
 // 重试配置
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 5000; // 5秒
