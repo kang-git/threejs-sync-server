@@ -1,4 +1,0 @@
-{
-  "schedule": "0 2 * * *",
-  "syncOnStart": true
-}

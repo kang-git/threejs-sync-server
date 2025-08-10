@@ -1,32 +1,36 @@
-# 忽略日志文件和日志目录
+# 依赖
+node_modules/
+package-lock.json
+yarn.lock
+
+# 日志
 logs/
 *.log
+npm-debug.log*
 
-# 忽略Node.js依赖
-node_modules/
-
-# 忽略Three.js仓库目录
-three.js-repo/
-
-# 忽略操作系统文件
-.DS_Store
-Thumbs.db
-
-# 忽略IDE和编辑器文件
-.idea/
-.vscode/
-*.sublime-project
-*.sublime-workspace
+# 运行时数据
 .codebuddy/
 
-# 忽略npm日志
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+# Three.js仓库
+three.js-repo/
 
-# 忽略环境变量文件
+# 构建输出
+website/
+
+# 环境变量
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+
+# 编辑器配置
+.vscode/
+.idea/
+*.swp
+*.swo
+.codebuddy/
+
+# 操作系统文件
+.DS_Store
+Thumbs.db

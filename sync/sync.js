@@ -2,16 +2,14 @@ const simpleGit = require('simple-git');
 const fs = require('fs-extra');
 const path = require('path');
 const { createLogger } = require('../utils/logs/logger');
+const config = require('../config');
 
-// Three.js 仓库URL
-const THREEJS_REPO = 'https://gitee.com/mirrors/three.js.git'; // 使用Gitee镜像作为主要仓库
-// 备用镜像仓库URL
-const BACKUP_REPO = 'https://github.com/mrdoob/three.js.git'; // GitHub作为备用
-// 本地存储路径
-const LOCAL_PATH = path.join(__dirname, '../three.js-repo');
-// 重试配置
-const MAX_RETRIES = 3;
-const RETRY_DELAY = 5000; // 5秒
+// 从配置文件获取参数
+const THREEJS_REPO = config.backupRepoUrl || 'https://gitee.com/mirrors/three.js.git'; // 使用Gitee镜像作为主要仓库
+const BACKUP_REPO = config.repoUrl || 'https://github.com/mrdoob/three.js.git'; // GitHub作为备用
+const LOCAL_PATH = config.repoPath;
+const MAX_RETRIES = config.sync?.maxRetries || 3;
+const RETRY_DELAY = config.sync?.retryDelay || 5000; // 5秒
 
 // 创建日志记录器
 const logger = createLogger('sync', {
@@ -194,7 +192,6 @@ async function syncThreeJsRepo() {
 }
 
 // 如果直接运行此脚本，则执行同步
-console.log(require.main.filename, module.filename, "环境参数")
 if (require.main === module) {
   syncThreeJsRepo();
 }

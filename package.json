@@ -1,27 +1,31 @@
 {
-  "name": "threejs-sync",
+  "name": "threejs-mirror",
   "version": "1.0.0",
-  "description": "定期从GitHub拉取Three.js源码到本地",
+  "description": "定期从GitHub拉取Three.js源码并提供本地访问",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "sync": "node sync/sync.js",
-    "clear-logs": "node utils/logs/clear-logs.js --all",
-    "clear-sync-log": "node utils/logs/clear-logs.js sync",
-    "clear-index-log": "node utils/logs/clear-logs.js index"
+    "sync": "node -e \"require('./sync/sync').syncThreeJsRepo()\"",
+    "build": "node server/build.js",
+    "server": "node start-server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
     "threejs",
-    "github",
-    "sync"
+    "mirror",
+    "sync",
+    "github"
   ],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
-    "fs-extra": "^11.3.1",
-    "node-cron": "^4.2.1",
-    "nodemon": "^3.1.10",
-    "simple-git": "^3.28.0",
-    "winston": "^3.17.0"
+    "express": "^4.18.2",
+    "fs-extra": "^11.1.1",
+    "node-cron": "^3.0.2",
+    "simple-git": "^3.19.1",
+    "winston": "^3.10.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
   }
 }

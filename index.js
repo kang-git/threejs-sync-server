@@ -1,82 +1,108 @@
+/**
+ * Three.js本地镜像服务
+ * 定期从GitHub拉取Three.js源码并提供本地访问
+ */
+
 const cron = require('node-cron');
 const { syncThreeJsRepo } = require('./sync/sync');
+const { main: buildWebsite } = require('./server/build');
+const { main: buildMinimal } = require('./server/build-minimal');
+const { startServer } = require('./server/server');
 const { createLogger } = require('./utils/logs/logger');
-const path = require('path');
-const fs = require('fs-extra');
+const config = require('./config');
 
 // 创建日志记录器
-const logger = createLogger('index', {
+const logger = createLogger('main', {
   level: 'info',
-  console: true,
-  maxsize: 5242880, // 5MB
-  maxFiles: 5
+  console: true
 });
 
-// 配置文件路径
-const CONFIG_PATH = path.join(__dirname, 'config.json');
-
-// 默认配置
-const DEFAULT_CONFIG = {
-  // 默认每天凌晨2点执行同步
-  schedule: '0 2 * * *',
-  // 是否在启动时立即执行一次同步
-  syncOnStart: true
-};
-
 /**
- * 读取配置文件
+ * 执行同步任务
  */
-async function loadConfig() {
+async function runSyncTask() {
+  logger.info('开始执行同步任务...');
+  
   try {
-    // 检查配置文件是否存在
-    const exists = await fs.pathExists(CONFIG_PATH);
+    // 同步仓库
+    await syncThreeJsRepo();
+    const syncResult = { success: true, hasChanges: true }; // 简化结果，因为syncThreeJsRepo不返回详细信息
     
-    if (!exists) {
-      // 如果不存在，创建默认配置文件
-      logger.info('配置文件不存在，创建默认配置...');
-      await fs.writeJson(CONFIG_PATH, DEFAULT_CONFIG, { spaces: 2 });
-      return DEFAULT_CONFIG;
+    // 如果同步成功且有更新，或者配置为始终构建，则构建网站
+    if ((syncResult.success && syncResult.hasChanges) || config.sync.buildAfterSync) {
+      logger.info('开始构建网站...');
+      
+      try {
+        // 尝试完整构建
+        await buildWebsite();
+      } catch (buildError) {
+        logger.warn('完整构建失败，尝试最小化构建:', buildError.message);
+        
+        // 如果完整构建失败，尝试最小化构建
+        try {
+          await buildMinimal();
+          logger.info('最小化构建成功完成');
+        } catch (minimalError) {
+          logger.error('最小化构建也失败:', minimalError.message);
+          throw minimalError;
+        }
+      }
     }
     
-    // 读取配置文件
-    const config = await fs.readJson(CONFIG_PATH);
-    return { ...DEFAULT_CONFIG, ...config };
+    logger.info('同步任务完成');
   } catch (error) {
-    logger.error('读取配置文件失败:', error);
-    logger.error(error.stack || error.toString());
-    return DEFAULT_CONFIG;
+    logger.error('同步任务失败:', error);
   }
 }
 
 /**
- * 启动定时同步任务
+ * 启动Web服务器
  */
-async function startSyncScheduler() {
+async function startWebServer() {
+  logger.info('正在启动Web服务器...');
+  
   try {
-    // 加载配置
-    const config = await loadConfig();
-    logger.info('已加载配置:', JSON.stringify(config, null, 2));
-    
-    // 如果配置了启动时同步，则立即执行一次
-    if (config.syncOnStart) {
-      logger.info('正在执行启动时同步...');
-      await syncThreeJsRepo();
+    const server = await startServer();
+    logger.info('Web服务器启动成功');
+    return server;
+  } catch (error) {
+    logger.error('启动Web服务器时发生错误:', error);
+    throw error;
+  }
+}
+
+/**
+ * 主函数
+ */
+async function main() {
+  logger.info('Three.js本地镜像服务启动中...');
+  
+  try {
+    // 如果配置为启动时同步，则执行同步任务
+    if (config.sync.syncOnStart) {
+      await runSyncTask();
     }
     
     // 设置定时任务
-    logger.info(`设置定时任务，调度表达式: ${config.schedule}`);
-    cron.schedule(config.schedule, () => {
-      logger.info('执行定时同步任务...');
-      syncThreeJsRepo();
-    });
+    logger.info(`设置定时任务: ${config.sync.schedule}`);
+    cron.schedule(config.sync.schedule, runSyncTask);
     
-    logger.info(`Three.js同步服务已启动，将按照计划 "${config.schedule}" 定期同步`);
-    logger.info('按 Ctrl+C 停止服务');
+    // 启动Web服务器
+    await startWebServer();
+    
+    logger.info('Three.js本地镜像服务已启动');
   } catch (error) {
-    logger.error('启动同步调度器失败:', error);
-    logger.error(error.stack || error.toString());
+    logger.error('服务启动失败:', error);
+    process.exit(1);
   }
 }
 
 // 启动服务
-startSyncScheduler();
+main();
+
+// 导出函数，方便单独使用
+module.exports = {
+  runSyncTask,
+  startWebServer,
+  main
+};
