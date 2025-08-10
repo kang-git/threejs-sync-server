@@ -1,0 +1,31 @@
+# 忽略日志文件和日志目录
+logs/
+*.log
+
+# 忽略Node.js依赖
+node_modules/
+
+# 忽略Three.js仓库目录
+three.js-repo/
+
+# 忽略操作系统文件
+.DS_Store
+Thumbs.db
+
+# 忽略IDE和编辑器文件
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# 忽略npm日志
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 忽略环境变量文件
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local

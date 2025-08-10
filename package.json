@@ -1,0 +1,27 @@
+{
+  "name": "threejs-sync",
+  "version": "1.0.0",
+  "description": "定期从GitHub拉取Three.js源码到本地",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "sync": "node sync.js",
+    "clear-logs": "node clear-logs.js --all",
+    "clear-sync-log": "node clear-logs.js sync",
+    "clear-index-log": "node clear-logs.js index"
+  },
+  "keywords": [
+    "threejs",
+    "github",
+    "sync"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "fs-extra": "^11.3.1",
+    "node-cron": "^4.2.1",
+    "nodemon": "^3.1.10",
+    "simple-git": "^3.28.0",
+    "winston": "^3.17.0"
+  }
+}
