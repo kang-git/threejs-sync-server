@@ -17,6 +17,7 @@ Thumbs.db
 .vscode/
 *.sublime-project
 *.sublime-workspace
+.codebuddy/
 
 # 忽略npm日志
 npm-debug.log*
