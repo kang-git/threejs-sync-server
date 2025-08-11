@@ -6,7 +6,6 @@
 const cron = require('node-cron');
 const { syncThreeJsRepo } = require('./sync/sync');
 const { main: buildWebsite } = require('./server/build');
-const { main: buildMinimal } = require('./server/build-minimal');
 const { startServer } = require('./server/server');
 const { createLogger } = require('./utils/logger/logger');
 const config = require('./config');
@@ -36,16 +35,7 @@ async function runSyncTask() {
         // 尝试完整构建
         await buildWebsite();
       } catch (buildError) {
-        logger.warn('完整构建失败，尝试最小化构建:', buildError.message);
-        
-        // 如果完整构建失败，尝试最小化构建
-        try {
-          await buildMinimal();
-          logger.info('最小化构建成功完成');
-        } catch (minimalError) {
-          logger.error('最小化构建也失败:', minimalError.message);
-          throw minimalError;
-        }
+        logger.warn('完整构建失败:', buildError.message);
       }
     }
     
