@@ -5,7 +5,7 @@
 
 const express = require('express');
 const path = require('path');
-const { createLogger } = require('../utils/logs/logger');
+const { createLogger } = require('../utils/logger/logger');
 const config = require('../config');
 
 // 创建日志记录器

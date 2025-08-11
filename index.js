@@ -8,7 +8,7 @@ const { syncThreeJsRepo } = require('./sync/sync');
 const { main: buildWebsite } = require('./server/build');
 const { main: buildMinimal } = require('./server/build-minimal');
 const { startServer } = require('./server/server');
-const { createLogger } = require('./utils/logs/logger');
+const { createLogger } = require('./utils/logger/logger');
 const config = require('./config');
 
 // 创建日志记录器

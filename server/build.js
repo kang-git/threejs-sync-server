@@ -6,7 +6,7 @@
 const { execSync } = require('child_process');
 const fs = require('fs-extra');
 const path = require('path');
-const { createLogger } = require('../utils/logs/logger');
+const { createLogger } = require('../utils/logger/logger');
 
 // 创建日志记录器
 const logger = createLogger('build', {

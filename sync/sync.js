@@ -1,7 +1,7 @@
 const simpleGit = require('simple-git');
 const fs = require('fs-extra');
 const path = require('path');
-const { createLogger } = require('../utils/logs/logger');
+const { createLogger } = require('../utils/logger/logger');
 const config = require('../config');
 
 // 从配置文件获取参数
