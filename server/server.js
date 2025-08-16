@@ -53,6 +53,11 @@ async function startServer() {
   });
 }
 
+// 如果直接运行此脚本，则执行主函数
+if (require.main === module) {
+  startServer();
+}
+
 module.exports = {
   startServer
 };
