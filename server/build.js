@@ -30,15 +30,26 @@ function runCommand(command, cwd, timeout = 600000) { // 默认10分钟超时
   logger.info(`超时设置: ${timeout / 1000}秒`);
   
   try {
-    const output = execSync(command, { 
-      cwd, 
+    const output = execSync(command, {
+      cwd,
       encoding: 'utf8',
       stdio: 'pipe',
       timeout: timeout // 添加超时设置
     });
+    // 输出命令执行过程中的内容到日志
+    if (output) {
+      logger.info(`命令输出: \n${output}`);
+    }
     logger.info(`命令执行成功: ${command}`);
     return output;
   } catch (error) {
+    // 如果有标准输出或错误输出，也记录到日志
+    if (error.stdout) {
+      logger.error(`命令标准输出: \n${error.stdout.toString()}`);
+    }
+    if (error.stderr) {
+      logger.error(`命令错误输出: \n${error.stderr.toString()}`);
+    }
     if (error.signal === 'SIGTERM') {
       logger.error(`命令执行超时: ${command}`);
       throw new Error(`命令执行超时: ${command}`);
@@ -121,21 +132,48 @@ async function copyWebsiteFiles() {
   try {
     // 确保输出目录存在
     await fs.ensureDir(OUTPUT_DIR);
-    
+
     // 复制必要的目录
-    const dirsToCopy = ['build', 'docs', 'examples', 'manual', 'files'];
-    
+    const dirsToCopy = ['build', 'docs', 'editor', 'examples', 'manual', 'playground', 'files'];
+
     for (const dir of dirsToCopy) {
       const srcDir = path.join(THREEJS_REPO_PATH, dir);
       const destDir = path.join(OUTPUT_DIR, dir);
-      
       logger.info(`复制目录: ${dir}`);
       await fs.copy(srcDir, destDir);
     }
-    
-    // 注意：首页由用户自行编写，不需要复制
-    logger.info('首页由用户自行编写，跳过复制步骤');
-    
+
+    // 复制 public/index.html 到 website 根目录
+    const publicDir = path.join(__dirname, '../public');
+    const publicIndex = path.join(publicDir, 'index.html');
+    const websiteIndex = path.join(OUTPUT_DIR, 'index.html');
+    const publicProjects = path.join(publicDir, 'projects');
+    const websiteFilesProjects = path.join(OUTPUT_DIR, 'files', 'projects');
+    const publicExists = await fs.pathExists(publicDir);
+    if (publicExists) {
+      // 复制 index.html
+      const indexExists = await fs.pathExists(publicIndex);
+      if (indexExists) {
+        logger.info('复制 public/index.html 到 website 根目录');
+        await fs.copy(publicIndex, websiteIndex, { overwrite: true });
+      } else {
+        logger.warn('public/index.html 不存在，跳过复制');
+      }
+
+      // 复制 projects 目录到 website/files/projects
+      const projectsExists = await fs.pathExists(publicProjects);
+      if (projectsExists) {
+        // 确保目标目录存在
+        await fs.ensureDir(path.join(OUTPUT_DIR, 'files'));
+        logger.info('复制 public/projects 到 website/files/projects');
+        await fs.copy(publicProjects, websiteFilesProjects, { overwrite: true });
+      } else {
+        logger.warn('public/projects 目录不存在，跳过复制');
+      }
+    } else {
+      logger.warn('public 目录不存在，跳过复制');
+    }
+
     logger.info('网站文件复制完成');
   } catch (error) {
     logger.error('复制网站文件失败:', error);
@@ -162,7 +200,7 @@ async function main() {
     await buildThreeJs();
     
     // 构建文档
-    await buildDocs();
+    // await buildDocs();
     
     // 复制网站文件
     await copyWebsiteFiles();
