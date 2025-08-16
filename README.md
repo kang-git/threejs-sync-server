@@ -21,8 +21,8 @@
 1. 克隆本仓库：
 
 ```bash
-git clone https://github.com/yourusername/threejs-mirror.git
-cd threejs-mirror
+git clone https://github.com/kang-git/threejs-sync-server.git
+cd threejs-sync-server
 ```
 
 2. 安装依赖：
@@ -66,18 +66,12 @@ npm run sync
 npm run build
 ```
 
-最小化构建（仅包含必要文件）：
-
-```bash
-npm run build:minimal
-```
-
 ## 访问服务
 
 启动服务后，可以通过浏览器访问：
 
 ```
-http://localhost:3000
+http://localhost:9753
 ```
 
 ## 目录结构
