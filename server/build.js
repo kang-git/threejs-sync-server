@@ -1,4 +1,26 @@
 /**
+ * 批量替换 website/docs、examples、manual 下 index.html 文件中的 threejs.org 链接
+ */
+async function fixIndexHtmlLinks() {
+  const targetDirs = ['docs', 'examples', 'manual'];
+  for (const dir of targetDirs) {
+    const indexPath = path.join(OUTPUT_DIR, dir, 'index.html');
+    const exists = await fs.pathExists(indexPath);
+    if (exists) {
+      let content = await fs.readFile(indexPath, 'utf8');
+      const replaced = content.replace(/href="https:\/\/threejs\.org"/g, 'href="../index.html"');
+      if (replaced !== content) {
+        await fs.writeFile(indexPath, replaced, 'utf8');
+        logger.info(`已修正 ${dir}/index.html 中 threejs.org 链接`);
+      } else {
+        logger.info(`${dir}/index.html 未发现需要替换的链接`);
+      }
+    } else {
+      logger.warn(`${dir}/index.html 文件不存在，跳过`);
+    }
+  }
+}
+/**
  * Three.js官网打包脚本
  * 该脚本用于构建与Three.js官网一致的本地版本
  */
@@ -174,6 +196,8 @@ async function copyWebsiteFiles() {
       logger.warn('public 目录不存在，跳过复制');
     }
 
+    await fixIndexHtmlLinks();
+
     logger.info('网站文件复制完成');
   } catch (error) {
     logger.error('复制网站文件失败:', error);
@@ -200,7 +224,7 @@ async function main() {
     await buildThreeJs();
     
     // 构建文档
-    // await buildDocs();
+    await buildDocs();
     
     // 复制网站文件
     await copyWebsiteFiles();
