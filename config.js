@@ -62,6 +62,6 @@ module.exports = {
   // 服务器配置
   server: {
     port: 9753,
-    host: 'localhost'
+    host: '0.0.0.0'
   }
 };
