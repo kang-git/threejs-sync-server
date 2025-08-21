@@ -35,9 +35,9 @@ npm install
 
 配置文件位于`config.js`，可以根据需要修改以下配置：
 
-- `repoUrl`: Three.js的GitHub仓库URL
-- `backupRepoUrl`: 备用仓库URL（如Gitee镜像）
-- `sync.schedule`: 同步计划（Cron格式）
+- `repoUrl`: Three.js的Gitee镜像仓库URL
+- `backupRepoUrl`: 备用仓库URL（如Github仓库URL）
+- `sync.schedule`: 同步计划（Cron格式，默认值北京时间每天凌晨 2:00 ）
 - `sync.syncOnStart`: 是否在启动时立即同步
 - `server.port`: Web服务器端口
 - `server.host`: Web服务器主机
@@ -50,7 +50,7 @@ npm install
 npm start
 ```
 
-这将启动服务，根据配置自动同步Three.js仓库并启动Web服务器。
+这将启动服务，根据配置自动同步Three.js仓库并启动Web服务器, 每次自动同步之后自动构建。
 
 ### 手动同步
 
@@ -99,8 +99,8 @@ http://localhost:9753
 如果构建失败，可以尝试以下方法：
 
 1. 检查Three.js仓库是否正确同步
-2. 尝试最小化构建：`npm run build:minimal`
-3. 查看日志文件（`logs/build.log`）了解详细错误信息
+2. 查看日志文件（`logs/build.log`）了解详细错误信息
+3. 可删除 three.js-repo 整个目录后重新同步并构建，第一次同步耗时会较长
 
 ## 许可证
 
