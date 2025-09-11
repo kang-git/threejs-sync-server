@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>代码预览器</title>
+    <!-- 引入highlight.js样式 -->
+    <link rel="stylesheet" href="styles/github-dark.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .description {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .controls {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .path-input {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            border-color: #4a90e2;
+            outline: none;
+        }
+
+        button {
+            padding: 12px 25px;
+            background: #4a90e2;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #357abD;
+        }
+
+        .examples {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .example-btn {
+            padding: 8px 15px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .example-btn:hover {
+            background: #5a6268;
+        }
+
+        .code-preview {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .code-header {
+            background: #1e1e1e;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #f8f9fa;
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .file-icon {
+            font-size: 20px;
+        }
+
+        .file-name {
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .code-actions button {
+            padding: 8px 15px;
+            background: transparent;
+            border: 1px solid #6c757d;
+            margin-left: 10px;
+        }
+
+        .code-actions button:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .code-container {
+            max-height: 600px;
+            overflow: auto;
+            background-color: #f9ebe9;
+        }
+
+        /* 移除所有可能冲突的代码块样式，让highlight.js完全控制 */
+        pre {
+            margin: 0;
+            padding: 0;
+        }
+
+        pre code {
+            padding: 20px;
+            display: block;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .error {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            color: #dc3545;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #f8f9fa;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: white;
+            opacity: 0.8;
+            font-size: 14px;
+        }
+
+        .path-info {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .path-input {
+                flex-direction: column;
+            }
+            
+            input[type="text"], button {
+                width: 100%;
+            }
+            
+            .code-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .code-actions {
+                display: flex;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>代码预览器</h1>
+            <p class="description">动态加载和预览代码文件（从../目录加载）</p>
+        </header>
+
+        <div class="main-content">
+            <div class="controls">
+                <div class="path-input">
+                    <input type="text" id="filePath" placeholder="输入文件路径，例如: src/geometries/TubeGeometry.js">
+                    <button id="loadBtn">加载代码</button>
+                </div>
+                <div class="path-info">
+                    文件将从 <strong>../</strong> 目录下加载
+                </div>
+                <div class="examples">
+                    <p>示例文件:</p>
+                    <button class="example-btn" data-file="src/geometries/TubeGeometry.js">src/geometries/TubeGeometry.js</button>
+                </div>
+            </div>
+
+            <div class="code-preview">
+                <div class="code-header">
+                    <div class="file-info">
+                        <span class="file-icon">📄</span>
+                        <span class="file-name" id="fileName">选择文件进行预览</span>
+                    </div>
+                    <div class="code-actions">
+                        <button id="copyBtn">复制代码</button>
+                        <button id="rawBtn">查看原始文件</button>
+                    </div>
+                </div>
+                <div class="code-container">
+                    <pre><code id="codeOutput" class="language-javascript">// 代码将在这里显示
+// 请在上方输入文件路径并点击"加载代码"
+// 文件将从 ../ 目录下加载</code></pre>
+                </div>
+            </div>
+
+            <div id="errorMessage" class="error" style="display: none;"></div>
+        </div>
+
+        <footer>
+            <p>代码预览器 &copy; 2023 | 使用highlight.js进行语法高亮 | 文件路径: ../</p>
+        </footer>
+    </div>
+
+    <!-- 引入highlight.js核心库 -->
+    <script src="highlight.min.js"></script>
+    <!-- 引入JavaScript语言支持 -->
+    <script src="languages/javascript.min.js"></script>
+    
+    <script>
+        // 初始化highlight.js
+        hljs.highlightAll();
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const filePathInput = document.getElementById('filePath');
+            const loadBtn = document.getElementById('loadBtn');
+            const fileName = document.getElementById('fileName');
+            const codeOutput = document.getElementById('codeOutput');
+            const errorMessage = document.getElementById('errorMessage');
+            const copyBtn = document.getElementById('copyBtn');
+            const rawBtn = document.getElementById('rawBtn');
+            const exampleBtns = document.querySelectorAll('.example-btn');
+
+            // 基础路径 - 修改为 ../
+            const BASE_PATH = '../';
+
+            // 从URL参数获取文件路径
+            const urlParams = new URLSearchParams(window.location.search);
+            const fileParam = urlParams.get('file');
+            if (fileParam) {
+                filePathInput.value = fileParam;
+                loadFile(fileParam);
+            }
+
+            // 加载按钮点击事件
+            loadBtn.addEventListener('click', function() {
+                const filePath = filePathInput.value.trim();
+                if (filePath) {
+                    // 更新URL但不重新加载页面
+                    const newUrl = window.location.origin + window.location.pathname + '?file=' + encodeURIComponent(filePath);
+                    window.history.pushState({ path: newUrl }, '', newUrl);
+                    
+                    loadFile(filePath);
+                }
+            });
+
+            // 示例按钮点击事件
+            exampleBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const exampleFile = this.getAttribute('data-file');
+                    filePathInput.value = exampleFile;
+                    
+                    // 更新URL
+                    const newUrl = window.location.origin + window.location.pathname + '?file=' + encodeURIComponent(exampleFile);
+                    window.history.pushState({ path: newUrl }, '', newUrl);
+                    
+                    loadFile(exampleFile);
+                });
+            });
+
+            // 复制按钮点击事件
+            copyBtn.addEventListener('click', function() {
+                const textToCopy = codeOutput.textContent;
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    alert('代码已复制到剪贴板！');
+                }).catch(err => {
+                    console.error('无法复制文本: ', err);
+                });
+            });
+
+            // 查看原始文件按钮点击事件
+            rawBtn.addEventListener('click', function() {
+                const filePath = filePathInput.value.trim();
+                if (filePath) {
+                    // 修改为从 ../ 目录打开
+                    window.open(BASE_PATH + filePath, '_blank');
+                }
+            });
+
+            // 加载文件函数 - 修改为从 ../ 目录加载
+            function loadFile(filePath) {
+                errorMessage.style.display = 'none';
+                codeOutput.textContent = '加载中...';
+                fileName.textContent = filePath;
+
+                // 构建完整的文件路径
+                const fullPath = BASE_PATH + filePath;
+                
+                fetch(fullPath)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`文件加载失败: ${response.status} ${response.statusText}\n路径: ${fullPath}`);
+                        }
+                        return response.text();
+                    })
+                    .then(data => {
+                        displayCode(data, filePath);
+                    })
+                    .catch(error => {
+                        showError(error.message);
+                    });
+            }
+
+            // 显示代码函数
+            function displayCode(code, filePath) {
+                const extension = filePath.split('.').pop().toLowerCase();
+                
+                // 设置对应的语言类
+                let languageClass = 'language-plaintext';
+                if (extension === 'js' || extension === 'javascript') {
+                    languageClass = 'language-javascript';
+                } else if (extension === 'html' || extension === 'htm') {
+                    languageClass = 'language-html';
+                } else if (extension === 'css') {
+                    languageClass = 'language-css';
+                } else if (extension === 'json') {
+                    languageClass = 'language-json';
+                } else if (extension === 'xml') {
+                    languageClass = 'language-xml';
+                } else if (extension === 'glsl' || extension === 'vert' || extension === 'frag') {
+                    languageClass = 'language-glsl';
+                } else if (extension === 'py') {
+                    languageClass = 'language-python';
+                } else if (extension === 'java') {
+                    languageClass = 'language-java';
+                }
+                
+                // 更新代码块的类
+                codeOutput.className = languageClass;
+                
+                // 设置代码内容
+                codeOutput.textContent = code;
+                
+                // 使用highlight.js进行高亮
+                hljs.highlightElement(codeOutput);
+            }
+
+            // 显示错误信息
+            function showError(message) {
+                errorMessage.textContent = `错误: ${message}`;
+                errorMessage.style.display = 'block';
+                codeOutput.textContent = '无法加载文件内容';
+                codeOutput.className = 'language-plaintext';
+                hljs.highlightElement(codeOutput);
+            }
+
+            // 添加键盘快捷键
+            document.addEventListener('keydown', function(e) {
+                if (e.ctrlKey && e.key === 'Enter') {
+                    loadBtn.click();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
