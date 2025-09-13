@@ -20,6 +20,44 @@ async function fixIndexHtmlLinks() {
     }
   }
 }
+
+/**
+ * 修改文档中的源码链接为本地链接
+ */
+async function fixSourceLinks() {
+  logger.info('开始修改文档源码链接...');
+  
+  try {
+    const docsDir = path.join(OUTPUT_DIR, 'docs');
+    // 递归获取所有 HTML 文件
+    const files = await fs.readdir(docsDir, { recursive: true });
+    const htmlFiles = files.filter(file => file.endsWith('.html'));
+    
+    for (const file of htmlFiles) {
+      const filePath = path.join(docsDir, file);
+      let content = await fs.readFile(filePath, 'utf8');
+      
+      // 计算从当前文档到根目录的相对路径
+      const relativePath = path.relative(path.dirname(filePath), OUTPUT_DIR);
+      const relativeToRoot = relativePath.split(path.sep).join('/');
+      
+      // 替换 GitHub 源码链接为 codeview 链接
+      const oldPattern = /\[link:https:\/\/github\.com\/mrdoob\/three\.js\/blob\/master\/src\/([^\]]+)\]/g;
+      const newPattern = `[link:${relativeToRoot}/codeview/index.html?src=src/$1]`;
+      
+      const replaced = content.replace(oldPattern, newPattern);
+      if (replaced !== content) {
+        await fs.writeFile(filePath, replaced, 'utf8');
+        logger.info(`已修正源码链接: ${file}`);
+      }
+    }
+    
+    logger.info('文档源码链接修改完成');
+  } catch (error) {
+    logger.error('修改文档源码链接失败:', error);
+    throw error;
+  }
+}
 /**
  * Three.js官网打包脚本
  * 该脚本用于构建与Three.js官网一致的本地版本
@@ -156,7 +194,7 @@ async function copyWebsiteFiles() {
     await fs.ensureDir(OUTPUT_DIR);
 
     // 复制必要的目录
-    const dirsToCopy = ['build', 'docs', 'editor', 'examples', 'manual', 'playground', 'files'];
+    const dirsToCopy = ['build', 'docs', 'editor', 'examples', 'manual', 'playground', 'files', 'src'];
 
     for (const dir of dirsToCopy) {
       const srcDir = path.join(THREEJS_REPO_PATH, dir);
@@ -170,7 +208,9 @@ async function copyWebsiteFiles() {
     const publicIndex = path.join(publicDir, 'index.html');
     const websiteIndex = path.join(OUTPUT_DIR, 'index.html');
     const publicProjects = path.join(publicDir, 'projects');
+    const publicCodeview = path.join(publicDir, 'codeview');
     const websiteFilesProjects = path.join(OUTPUT_DIR, 'files', 'projects');
+    const websiteCodeview = path.join(OUTPUT_DIR, 'codeview');
     const publicExists = await fs.pathExists(publicDir);
     if (publicExists) {
       // 复制 index.html
@@ -192,11 +232,23 @@ async function copyWebsiteFiles() {
       } else {
         logger.warn('public/projects 目录不存在，跳过复制');
       }
+
+      // 复制 codeview 目录到 website/codeview
+      const codeviewExists = await fs.pathExists(publicCodeview);
+      if (codeviewExists) {
+        logger.info('复制 public/codeview 到 website/codeview');
+        await fs.copy(publicCodeview, websiteCodeview, { overwrite: true });
+      } else {
+        logger.warn('public/codeview 目录不存在，跳过复制');
+      }
     } else {
       logger.warn('public 目录不存在，跳过复制');
     }
 
     await fixIndexHtmlLinks();
+    
+    // 修复文档中的源码链接
+    await fixSourceLinks();
 
     logger.info('网站文件复制完成');
   } catch (error) {

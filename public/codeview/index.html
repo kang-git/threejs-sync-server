@@ -295,9 +295,9 @@
             // 基础路径 - 修改为 ../
             const BASE_PATH = '../';
 
-            // 从URL参数获取文件路径
+            // 从URL参数获取文件路径，同时支持 file 和 src 参数
             const urlParams = new URLSearchParams(window.location.search);
-            const fileParam = urlParams.get('file');
+            const fileParam = urlParams.get('file') || urlParams.get('src');
             if (fileParam) {
                 filePathInput.value = fileParam;
                 loadFile(fileParam);
@@ -307,8 +307,8 @@
             loadBtn.addEventListener('click', function() {
                 const filePath = filePathInput.value.trim();
                 if (filePath) {
-                    // 更新URL但不重新加载页面
-                    const newUrl = window.location.origin + window.location.pathname + '?file=' + encodeURIComponent(filePath);
+                    // 更新URL但不重新加载页面，优先使用 src 参数
+                    const newUrl = window.location.origin + window.location.pathname + '?src=' + encodeURIComponent(filePath);
                     window.history.pushState({ path: newUrl }, '', newUrl);
                     
                     loadFile(filePath);
@@ -321,8 +321,8 @@
                     const exampleFile = this.getAttribute('data-file');
                     filePathInput.value = exampleFile;
                     
-                    // 更新URL
-                    const newUrl = window.location.origin + window.location.pathname + '?file=' + encodeURIComponent(exampleFile);
+                    // 更新URL，使用 src 参数
+                    const newUrl = window.location.origin + window.location.pathname + '?src=' + encodeURIComponent(exampleFile);
                     window.history.pushState({ path: newUrl }, '', newUrl);
                     
                     loadFile(exampleFile);
