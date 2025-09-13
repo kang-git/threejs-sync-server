@@ -4,8 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>代码预览器</title>
-    <!-- 引入highlight.js样式 -->
+    <!-- 引入highlight.js样式和脚本 -->
     <link rel="stylesheet" href="styles/github-dark.min.css">
+    <script src="highlight.min.js"></script>
+    <script>
+        // 配置并初始化highlight.js
+        hljs.configure({
+            ignoreUnescapedHTML: true,
+            languages: ['javascript', 'xml', 'css', 'glsl']
+        });
+        hljs.initHighlightingOnLoad();
+    </script>
     <style>
         * {
             margin: 0;
@@ -19,7 +28,7 @@
             color: #333;
             line-height: 1.6;
             min-height: 100vh;
-            padding: 20px;
+            padding: 10px;
         }
 
         .container {
@@ -29,13 +38,13 @@
 
         header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 15px;
             color: white;
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         h1 {
-            font-size: 2.5rem;
+            font-size: 1.6rem;
             margin-bottom: 10px;
         }
 
@@ -52,7 +61,7 @@
 
         .controls {
             background: rgba(255, 255, 255, 0.9);
-            padding: 20px;
+            padding: 10px;
             border-radius: 10px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
         }
@@ -60,12 +69,12 @@
         .path-input {
             display: flex;
             gap: 10px;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
         }
 
         input[type="text"] {
             flex: 1;
-            padding: 12px 15px;
+            padding: 6px;
             border: 2px solid #ddd;
             border-radius: 5px;
             font-size: 16px;
@@ -78,7 +87,7 @@
         }
 
         button {
-            padding: 12px 25px;
+            padding: 6px 15px;
             background: #4a90e2;
             color: white;
             border: none;
@@ -96,7 +105,7 @@
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
-            margin-top: 15px;
+            align-items: center;
         }
 
         .example-btn {
@@ -122,7 +131,7 @@
 
         .code-header {
             background: #1e1e1e;
-            padding: 15px 20px;
+            padding: 10px 15px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -156,22 +165,24 @@
         }
 
         .code-container {
-            max-height: 600px;
+            max-height: 685px;
             overflow: auto;
-            background-color: #f9ebe9;
+            background-color: #1e1e1e; /* 改为深色背景 */
         }
 
-        /* 移除所有可能冲突的代码块样式，让highlight.js完全控制 */
+        /* highlight.js 容器样式 */
         pre {
-            margin: 0;
-            padding: 0;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: transparent !important;
         }
 
-        pre code {
-            padding: 20px;
-            display: block;
-            font-size: 14px;
-            line-height: 1.5;
+        pre code.hljs {
+            padding: 20px !important;
+            display: block !important;
+            font-size: 14px !important;
+            line-height: 1.5 !important;
+            font-family: Consolas, Monaco, 'Andale Mono', monospace !important;
         }
 
         .error {
@@ -191,7 +202,7 @@
 
         footer {
             text-align: center;
-            margin-top: 40px;
+            margin-top: 30px;
             color: white;
             opacity: 0.8;
             font-size: 14px;
@@ -201,6 +212,9 @@
             margin-top: 10px;
             font-size: 14px;
             color: #666;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         @media (max-width: 768px) {
@@ -228,8 +242,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>代码预览器</h1>
-            <p class="description">动态加载和预览代码文件（从../目录加载）</p>
+            <h2>代码预览器</h2>
         </header>
 
         <div class="main-content">
@@ -239,11 +252,11 @@
                     <button id="loadBtn">加载代码</button>
                 </div>
                 <div class="path-info">
-                    文件将从 <strong>../</strong> 目录下加载
-                </div>
-                <div class="examples">
-                    <p>示例文件:</p>
-                    <button class="example-btn" data-file="src/geometries/TubeGeometry.js">src/geometries/TubeGeometry.js</button>
+                    请拷贝任意文档页面底部源代码段落中的源码文件路径到上面输入框，然后点击《加载代码》按钮。
+                    <div class="examples">
+                        <p>示例文件:</p>
+                        <button class="example-btn" data-file="src/geometries/TubeGeometry.js">src/geometries/TubeGeometry.js</button>
+                    </div>
                 </div>
             </div>
 
@@ -269,7 +282,7 @@
         </div>
 
         <footer>
-            <p>代码预览器 &copy; 2023 | 使用highlight.js进行语法高亮 | 文件路径: ../</p>
+            <p>Powered By <a href="https://highlightjs.org/">highlight.js</a></p>
         </footer>
     </div>
 
@@ -377,42 +390,57 @@
                 const extension = filePath.split('.').pop().toLowerCase();
                 
                 // 设置对应的语言类
-                let languageClass = 'language-plaintext';
+                let language = 'plaintext';
                 if (extension === 'js' || extension === 'javascript') {
-                    languageClass = 'language-javascript';
+                    language = 'javascript';
                 } else if (extension === 'html' || extension === 'htm') {
-                    languageClass = 'language-html';
+                    language = 'xml';  // highlight.js 使用 xml 处理 HTML
                 } else if (extension === 'css') {
-                    languageClass = 'language-css';
+                    language = 'css';
                 } else if (extension === 'json') {
-                    languageClass = 'language-json';
+                    language = 'json';
                 } else if (extension === 'xml') {
-                    languageClass = 'language-xml';
+                    language = 'xml';
                 } else if (extension === 'glsl' || extension === 'vert' || extension === 'frag') {
-                    languageClass = 'language-glsl';
-                } else if (extension === 'py') {
-                    languageClass = 'language-python';
-                } else if (extension === 'java') {
-                    languageClass = 'language-java';
+                    language = 'glsl';
                 }
-                
-                // 更新代码块的类
-                codeOutput.className = languageClass;
+
+                // 创建pre和code元素结构
+                const preElement = document.createElement('pre');
+                const codeElement = document.createElement('code');
                 
                 // 设置代码内容
-                codeOutput.textContent = code;
+                codeElement.textContent = code;
+                
+                // 添加语言类
+                if (language !== 'plaintext') {
+                    codeElement.className = `language-${language}`;
+                }
+                
+                // 构建DOM结构
+                preElement.appendChild(codeElement);
+                codeOutput.innerHTML = '';
+                codeOutput.appendChild(preElement);
                 
                 // 使用highlight.js进行高亮
-                hljs.highlightElement(codeOutput);
+                hljs.highlightAll();
             }
 
             // 显示错误信息
             function showError(message) {
                 errorMessage.textContent = `错误: ${message}`;
                 errorMessage.style.display = 'block';
-                codeOutput.textContent = '无法加载文件内容';
-                codeOutput.className = 'language-plaintext';
-                hljs.highlightElement(codeOutput);
+                
+                const preElement = document.createElement('pre');
+                const codeElement = document.createElement('code');
+                codeElement.className = 'language-plaintext';
+                codeElement.textContent = '无法加载文件内容';
+                
+                preElement.appendChild(codeElement);
+                codeOutput.innerHTML = '';
+                codeOutput.appendChild(preElement);
+                
+                hljs.highlightAll();
             }
 
             // 添加键盘快捷键
