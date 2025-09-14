@@ -22,6 +22,31 @@ async function fixIndexHtmlLinks() {
 }
 
 /**
+ * 修改 prettify.js 中的 CDN 资源路径为本地路径
+ */
+async function fixPageJsResourcePaths() {
+  logger.info('开始修改 prettify.js 中的 CDN 资源路径...');
+  
+  try {
+    const prettifyJsPath = path.join(OUTPUT_DIR, 'docs/prettify/prettify.js');
+    let content = await fs.readFile(prettifyJsPath, 'utf8');
+    
+    // 替换 CDN 资源路径为本地路径
+    content = content.replace(
+      /https:\/\/cdn\.jsdelivr\.net\/gh\/google\/code-prettify@master\/loader\/prettify\.css/g,
+      '/docs/prettify/prettify.css'
+    );
+    
+    await fs.writeFile(prettifyJsPath, content, 'utf8');
+    logger.info('已修改 prettify.js 中的 CDN 资源路径');
+    
+  } catch (error) {
+    logger.error('修改 prettify.js 时出错:', error);
+    throw error;
+  }
+}
+
+/**
  * 修改文档中的源码链接为本地链接
  */
 async function fixSourceLinks() {
@@ -249,6 +274,9 @@ async function copyWebsiteFiles() {
     
     // 修复文档中的源码链接
     await fixSourceLinks();
+    
+    // 修改 prettify.js 中的 CDN 资源路径
+    await fixPageJsResourcePaths();
 
     logger.info('网站文件复制完成');
   } catch (error) {
